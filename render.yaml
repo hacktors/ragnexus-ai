@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: ragnexus-ai-backend
+    name: ragnexus-ai
     runtime: node
     rootDir: backend
-    buildCommand: npm ci
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /health
     autoDeployTrigger: commit

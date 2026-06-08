@@ -9,6 +9,7 @@
     "npm": ">=11.0.0"
   },
   "scripts": {
+    "build": "node scripts/check.js",
     "dev": "nodemon server.js",
     "start": "node server.js",
     "seed:admin": "node scripts/seedAdmin.js"

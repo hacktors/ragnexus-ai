@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const DEFAULT_API_ORIGIN = import.meta.env.PROD
-  ? "https://ragnexus-ai-backend.onrender.com"
+  ? "https://ragnexus-ai.onrender.com"
   : "http://localhost:5000";
 
 const normalizeApiBaseUrl = (value) => {
