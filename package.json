@@ -1,0 +1,22 @@
+{
+  "name": "ragnexus-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise Knowledge Intelligence and Self-Correcting RAG Platform",
+  "engines": {
+    "node": "24.x",
+    "npm": ">=11.0.0"
+  },
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "start": "npm run start --prefix backend",
+    "seed:admin": "npm run seed:admin --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

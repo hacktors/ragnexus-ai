@@ -1,0 +1,74 @@
+services:
+  - type: web
+    name: ragnexus-ai-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: "production"
+      - key: NODE_VERSION
+        value: "24.14.1"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CLIENT_ORIGIN
+        value: "https://ragnexus-ai.vercel.app"
+      - key: CLIENT_ORIGIN_REGEX
+        value: '^https://ragnexus-ai(?:-[a-z0-9-]+)?\.vercel\.app$'
+      - key: UPLOAD_DIR
+        value: "/data/uploads"
+      - key: MAX_UPLOAD_MB
+        value: "25"
+      - key: CHROMA_HOST
+        fromService:
+          type: pserv
+          name: ragnexus-ai-chroma
+          property: host
+      - key: CHROMA_PORT
+        fromService:
+          type: pserv
+          name: ragnexus-ai-chroma
+          property: port
+      - key: CHROMA_SSL
+        value: "false"
+      - key: CHROMA_DOCUMENT_COLLECTION
+        value: "ragnexus_documents"
+      - key: CHROMA_FEEDBACK_COLLECTION
+        value: "ragnexus_feedback_memory"
+      - key: GEMINI_MODEL
+        value: "gemini-3.5-flash"
+      - key: GEMINI_EMBEDDING_MODEL
+        value: "gemini-embedding-001"
+      - key: GEMINI_EMBEDDING_DIMENSIONS
+        value: "768"
+    disk:
+      name: ragnexus-ai-uploads
+      mountPath: /data
+      sizeGB: 1
+
+  - type: pserv
+    name: ragnexus-ai-chroma
+    runtime: image
+    image:
+      url: docker.io/chromadb/chroma:latest
+    autoDeployTrigger: commit
+    envVars:
+      - key: CHROMA_LISTEN_ADDRESS
+        value: "0.0.0.0"
+      - key: CHROMA_PORT
+        value: "8000"
+      - key: CHROMA_PERSIST_PATH
+        value: "/data"
+    disk:
+      name: ragnexus-ai-chroma-data
+      mountPath: /data
+      sizeGB: 1
