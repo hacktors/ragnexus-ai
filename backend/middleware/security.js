@@ -6,6 +6,12 @@ import hpp from "hpp";
 
 const normalizeOrigin = (origin) => String(origin || "").trim().replace(/\/+$/, "");
 
+const defaultAllowedOrigins = ["https://ragnexus-ai.vercel.app"];
+
+const defaultAllowedOriginPatterns = [
+  /^https:\/\/ragnexus-ai(?:-[a-z0-9-]+)?\.vercel\.app$/i
+];
+
 const parseOrigins = (value) =>
   String(value || "")
     .split(",")
@@ -34,8 +40,8 @@ const getCorsConfig = () => {
   if (cacheKey !== corsConfigCacheKey) {
     corsConfigCacheKey = cacheKey;
     corsConfigCache = {
-      origins: new Set(parseOrigins(process.env.CLIENT_ORIGIN)),
-      patterns: parseOriginPatterns(patternConfig)
+      origins: new Set([...defaultAllowedOrigins, ...parseOrigins(process.env.CLIENT_ORIGIN)]),
+      patterns: [...defaultAllowedOriginPatterns, ...parseOriginPatterns(patternConfig)]
     };
   }
 
@@ -44,25 +50,26 @@ const getCorsConfig = () => {
 
 const localDevOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
-const corsOrigin = (origin, callback) => {
-  if (!origin) {
-    callback(null, true);
-    return;
-  }
+export const isAllowedCorsOrigin = (origin) => {
+  if (!origin) return true;
 
   const normalizedOrigin = normalizeOrigin(origin);
   const { origins, patterns } = getCorsConfig();
 
-  if (
+  return (
     origins.has(normalizedOrigin) ||
     patterns.some((pattern) => pattern.test(normalizedOrigin)) ||
     (process.env.NODE_ENV !== "production" && localDevOriginPattern.test(normalizedOrigin))
-  ) {
+  );
+};
+
+const corsOrigin = (origin, callback) => {
+  if (isAllowedCorsOrigin(origin)) {
     callback(null, true);
     return;
   }
 
-  callback(new Error(`CORS origin not allowed: ${normalizedOrigin}`));
+  callback(new Error(`CORS origin not allowed: ${normalizeOrigin(origin)}`));
 };
 
 const sanitizeMongoPayload = (req, _res, next) => {
@@ -82,7 +89,8 @@ export const securityMiddleware = [
     origin: corsOrigin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204
   }),
   compression(),
   sanitizeMongoPayload,
